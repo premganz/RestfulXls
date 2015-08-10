@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 
-package org.spo.restfulxls.ifs.svr;
+package org.spo.ifs.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -65,7 +65,7 @@ public class JettyConfiguration {
     @Autowired
     private HealthCheckRegistry metricsHealthCheckRegistry;
 
-    @Value("${jetty.port:9090}")
+    @Value("${jetty.port:8081}")
     private int jettyPort;
 
     private void addMetricsServlet(WebAppContext webAppContext) {

@@ -5,16 +5,14 @@ b) cgi scripts
 c) MQ based templating services in a pattern of event propogation and fetching templated text
 d) UI for invoking restulf services
 
-A lot of the software is based on JasonIsh 's work in Github and hence redistributing under MIT licence read as below 
-
-
-
+Some of this software is based on JasonIsh 's work in Github and his files bear the copyright notice distributed by him.
+For all the other files not bearing the copyright notice, I attach this MIT licence read as below.  
 
 
 Licence:
 
 * The MIT License (MIT)
- * Copyright (C) 2014 PremGanz
+ * Copyright (C) 2014 PremGanesh
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation

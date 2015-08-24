@@ -30,7 +30,7 @@ public class XlsController {
 
 	@ResponseBody
 	@RequestMapping(value="/{bookName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
-	public List<Map<String,String>> queryByParams(@PathVariable String bookName,
+	public List<Map<String,String>> queryByParams(@PathVariable String bookName, 
 			@RequestParam(value="fld", required=false) String[] queryFlds, 
 			@RequestParam(value="val", required=false) String[] queryVals,
 			@PathVariable String requiredField) {

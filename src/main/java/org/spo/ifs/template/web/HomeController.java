@@ -28,7 +28,7 @@ public class HomeController {
     /**
      * Simple controller for "/" that returns a Thymeleaf view.
      */
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/home", method = RequestMethod.GET)
     public String home(Locale locale, Model model) {
         logger.info("Welcome home! the client locale is " + locale.toString());
 
@@ -43,7 +43,7 @@ public class HomeController {
         model.addAttribute("echoService", echoService);
         model.addAttribute("someItems", new String[] { "one", "two", "three" });
 
-        return "home";
+        return "index";
     }
 
 }

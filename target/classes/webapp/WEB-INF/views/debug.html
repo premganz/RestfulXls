@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hello jQuery</title>
+<script	src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<body>
+	<script>
+    var greet='';
+		$(document).ready(function(){
+		  $("#select1").change(function(){
+			  var msg= 'Select  '+ $(this).attr('id')+'   '+ $(this).val();
+		  $("#myEdit").html(msg);
+		  $("#myTextArea").val("new text");
+		
+		  });
+		});
+		$(document).ready(function(){
+		$("#select1").change(function(){
+		    $.ajax({url: "http://localhost:8081/event/x/?meta=none",async: false, 
+		    	success: function(result){
+		        $("#myTextArea").val(result);
+		    }});
+		   
+		});
+		});
+		
+		function update(inputId) {
+			// alert('making call');
+			  $.ajax({
+			    type: 'GET',
+			    dataType: 'json',
+			    url:"http://localhost:8081/"+"/"+$("#"+inputId).val()+$("#select1").val(),
+			    timeout: 600000,
+			    success: function(data, textStatus ){
+			       $("#myTextArea").val(JSONstringify(data));
+			    },
+			    error:function(exception){alert('Exeption:'+exception);}
+			  });
+			}
+			
+		function JSONstringify(json) {
+		    if (typeof json != 'string') {
+		        json = JSON.stringify(json, undefined, '\t');
+		    }
+
+		    json = json.replace(/\"/g, "");
+		    json = json.replace(/\,/g, "");
+		    
+		   
+		    return json;
+		}
+		
+	
+		
+	</script>
+	<table>
+	<tr>
+	<td>
+	<div>Result is :</div> <textArea id="myTextArea" value="" style="height: 509px; width: 679px;" />
+	</td>
+	<td>
+	<table>
+	<tr><td><select id="select1"><option>?meta=none</option><option></option><option>?showFormData=True</option></select></td></tr>	
+	<tr><td><input id="inputPath1" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath1')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath2" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath2')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath3" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath3')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath4" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath4')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath5" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath5')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath6" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath6')"></input><br></br><br></br></td></tr>
+	<tr><td><input id="inputPath7" placeholder="" size="80" /></td></tr>
+	<tr><td><input type="submit" onclick="script:update('inputPath7')"></input><br></br><br></br></td></tr>
+	</table>
+	</td></tr>
+	</table>
+</body>
+</html>

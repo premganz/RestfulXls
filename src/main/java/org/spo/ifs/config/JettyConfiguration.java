@@ -1,3 +1,4 @@
+package org.spo.ifs.config;
 /*
  * The MIT License (MIT)
  * Copyright (C) 2012 Jason Ish
@@ -23,13 +24,10 @@
  * SOFTWARE.
  */
 
-package org.spo.ifs.config;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.servlets.AdminServlet;
-import com.codahale.metrics.servlets.HealthCheckServlet;
-import com.codahale.metrics.servlets.MetricsServlet;
+
+import java.io.IOException;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -46,7 +44,11 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import java.io.IOException;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.servlets.AdminServlet;
+import com.codahale.metrics.servlets.HealthCheckServlet;
+import com.codahale.metrics.servlets.MetricsServlet;
 
 /**
  * Configure the embedded Jetty server and the SpringMVC dispatcher servlet.
@@ -65,7 +67,7 @@ public class JettyConfiguration {
     @Autowired
     private HealthCheckRegistry metricsHealthCheckRegistry;
 
-    @Value("${jetty.port:8081}")
+    @Value("${jetty.port:8082}")
     private int jettyPort;
 
     private void addMetricsServlet(WebAppContext webAppContext) {
@@ -124,8 +126,12 @@ public class JettyConfiguration {
 
         /* Create a basic connector. */
         ServerConnector httpConnector = new ServerConnector(server);
+    //    ServerConnector  ajpConnector = new org.eclipse.jetty.ajp.Ajp13SocketConnector();
         httpConnector.setPort(jettyPort);
+        //ajpConnector.setPort(8009);
+        
         server.addConnector(httpConnector);
+      //  server.addConnector(ajpConnector);
 
         server.setHandler(webAppContext());
 

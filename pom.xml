@@ -121,15 +121,10 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.1.4.v20140401</version>
+			<version>8.1.17.v20150415</version>
 		</dependency>
 		
-		
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-		</dependency>
+	
 
 		<!-- Yammer (Coda Hale) Metrics -->
 		<dependency>

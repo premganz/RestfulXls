@@ -29,7 +29,7 @@ package org.spo.ifs.config;
 import java.io.IOException;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
@@ -125,12 +125,14 @@ public class JettyConfiguration {
         Server server = new Server();
 
         /* Create a basic connector. */
-        ServerConnector httpConnector = new ServerConnector(server);
+        SelectChannelConnector  httpConnector = new SelectChannelConnector ();
+     
     //    ServerConnector  ajpConnector = new org.eclipse.jetty.ajp.Ajp13SocketConnector();
         httpConnector.setPort(jettyPort);
         //ajpConnector.setPort(8009);
         
         server.addConnector(httpConnector);
+        
       //  server.addConnector(ajpConnector);
 
         server.setHandler(webAppContext());

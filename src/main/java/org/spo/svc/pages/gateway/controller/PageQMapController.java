@@ -42,14 +42,14 @@ public class PageQMapController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value="/{moduleName}/{pageName}", method=RequestMethod.GET,   params={"meta"} )
-	public List<String> handlePageRequest_List( @PathVariable String pageName,@RequestParam(value="meta", required=false) String metaValue
-			, @PathVariable String moduleName) {
+	@RequestMapping(value="/{mppName}/{functionCode}", method=RequestMethod.GET,   params={"meta"} )
+	public List<String> handlePageRequest_List( @PathVariable String mppName,@RequestParam(value="meta", required=false) String metaValue
+			, @PathVariable String functionCode) {
 
 		try {
 			QMessage message = new QMessage();
 			message.setHandler("pages");
-			message.setFileName(moduleName+"/"+pageName);
+			message.setFileName(mppName+"/"+functionCode);
 			message.setMeta(metaValue);
 			return connector.getResponseAsList(message);
 	

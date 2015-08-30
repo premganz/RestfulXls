@@ -28,7 +28,14 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+ 	<!-- jQuery -->
+    <script src="js/jquery.js"></script>
 
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="js/clean-blog.min.js"></script>
 </head>
 
 <body>
@@ -104,7 +111,8 @@
                 <!-- Pager -->
                 <ul class="pager">
                     <li class="next">
-                        <a href="#">Older Posts &rarr;</a>
+                        <a href="#" onClick="javaScript:loadajax()">Older Posts &rarr;</a>
+                        <input id="hello" type="submit" value="helloworld" onClick="javaScript:loadajax()"></input>
                     </li>
                 </ul>
             </div>
@@ -112,7 +120,9 @@
     </div>
 
     <hr></hr>
-
+<div class="container">
+<textarea id="myTextArea" rows="20" cols="80"></textarea>
+</div>
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -149,15 +159,25 @@
             </div>
         </div>
     </footer>
+<script>
+function loadajax(){
+	$(document).ready(function(){		
+		    $.ajax({url: "http://localhost:8082/pages/PG01O/01?meta=none",async: false, 
+		    	success: function(result){
+		        $("#myTextArea").val(result);
+		    }});
+		   
+		});
+}
+$(document).ready(function(){
+	
+	   loadajax();
+	
 
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
+	});
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="js/clean-blog.min.js"></script>
+</script>
+   
 
 </body>
 

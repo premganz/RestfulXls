@@ -4,8 +4,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.spo.svc.mq.model.QMessage;
-import org.spo.svc.mq.svc.MQConnector;
+import org.spo.svc.pages.gateway.model.QMessage;
+import org.spo.svc.pages.gateway.svc.MQConnector;
 import org.spo.trx.pg.cmd.PG01O;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

@@ -43,7 +43,7 @@ public class MQConnector {
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			// Create the destination (Topic or Queue)
-			Destination destination = session.createQueue("MAIN.FOO");
+			Destination destination = session.createQueue("MAIN.2");
 
 			// Create a MessageProducer from the Session to the Topic or Queue
 			MessageProducer producer = session.createProducer(destination);

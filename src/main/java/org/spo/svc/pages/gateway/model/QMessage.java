@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class QMessage {
+	private String repo;
 	private String handler;
 	private String fileName;
 	private String meta;
@@ -30,5 +31,14 @@ public class QMessage {
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
+	public String getRepo() {
+		return repo;
+	}
+	@XmlElement
+	public void setRepo(String repo) {
+		this.repo = repo;
+	}
 
+	
+	
 }

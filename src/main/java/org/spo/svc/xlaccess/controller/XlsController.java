@@ -26,11 +26,22 @@ public class XlsController {
 	@Autowired
 	private XlsReader reader_node_1;
 
-	
+	@ResponseBody
+	@RequestMapping(value="{xlsName}", method=RequestMethod.GET)
+	public List<Map<String,String>> handleFullSheetQuery(@PathVariable String xlsName) {
+
+		XlsReader reader1=xlsName.equals("Q2-2014_Data_Elements_forQA")?reader:reader_node_1;
+		try {
+			return reader1.queryAbstractElementDoc_List(xlsName.toString(),null,null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<Map<String,String>>();
+		}
+	}
 
 	@ResponseBody
-	@RequestMapping(value="/{bookName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
-	public List<Map<String,String>> queryByParams(@PathVariable String bookName, 
+	@RequestMapping(value="/{xlsName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
+	public List<Map<String,String>> queryByParams(@PathVariable String xlsName,
 			@RequestParam(value="fld", required=false) String[] queryFlds, 
 			@RequestParam(value="val", required=false) String[] queryVals,
 			@PathVariable String requiredField) {
@@ -44,9 +55,8 @@ public class XlsController {
 				}
 				
 			}
-			reader.changeXmlDataSource(bookName);
-			//Currently only single sheet xls is supported, 97-2003 format
-			return reader.queryAbstractElementDoc_List("".toString(),buf.toString(),requiredField );
+			
+			return reader.queryAbstractElementDoc_List(xlsName.toString(),buf.toString(),requiredField );
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<Map<String,String>>();
@@ -69,8 +79,8 @@ public class XlsController {
 				}
 				
 			}
-			reader.setTestMode();
-			return reader.queryAbstractElementDoc_List(sheetName.toString(),buf.toString(),requiredField );
+			
+			return reader.queryAbstractElementDoc_List("Script7",buf.toString(),requiredField );
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<Map<String,String>>();
@@ -78,7 +88,7 @@ public class XlsController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value="/map/{xmlName}/{sheetName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
+	@RequestMapping(value="/map/{xmlName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
 	public List<Map<String,String>> queryAnyFile(@PathVariable String sheetName,@PathVariable String xmlName,
 			@RequestParam(value="fld", required=false) String[] queryFlds, 
 			@RequestParam(value="val", required=false) String[] queryVals,
@@ -93,7 +103,7 @@ public class XlsController {
 				}
 				
 			}
-			reader_node_1.changeXmlDataSource(xmlName);
+			
 			
 			return reader.queryAbstractElementDoc_List(sheetName.toString(),buf.toString(),requiredField );
 		} catch (Exception e) {
@@ -103,8 +113,8 @@ public class XlsController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value="/string/{xmlName}/{sheetName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
-	public String queryAnyFileValue(@PathVariable String sheetName,@PathVariable String xmlName,
+	@RequestMapping(value="/string/{xmlName}/{requiredField}", method=RequestMethod.GET , params={"fld", "val"} )
+	public String queryAnyFileValue(@PathVariable String xmlName,
 			@RequestParam(value="fld", required=false) String[] queryFlds, 
 			@RequestParam(value="val", required=false) String[] queryVals,
 			@PathVariable String requiredField) {
@@ -118,9 +128,9 @@ public class XlsController {
 				}
 				
 			}
-			reader_node_1.changeXmlDataSource(xmlName);
 			
-			return reader.queryAbstractElementDoc(sheetName.toString(),buf.toString(),requiredField );
+			
+			return reader.queryAbstractElementDoc(xmlName.toString(),buf.toString(),requiredField );
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "";

@@ -37,9 +37,9 @@ public class TestXlsReader {
 		URL resourceUrl = getClass().getResource("/DraftOne.xml");
 		String resourcePath = resourceUrl.toURI().getPath();
 		f= new File(resourcePath);
-		XlsReader reader = new XlsReader(f, "DraftOne.xml");
+		XlsReader reader = new XlsReader();
 		
-			//reader.readXlsAsXml();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
@@ -47,8 +47,8 @@ public class TestXlsReader {
 	}
 	@Test
 	public void testGetHeaderRows() throws Exception {
-		XlsReader reader = new XlsReader(f, "DraftOne.xml");
-		NodeList list = reader.getHeaderRows();
+		XlsReader reader = new XlsReader();
+		NodeList list = reader.getHeaderRows(f);
 		for(int i=0;i<list.getLength();i++){
 			Node n = list.item(i);
 			System.out.println(n.getTextContent());
@@ -59,8 +59,8 @@ public class TestXlsReader {
 	
 	@Test
 	public void getRecordRows() throws Exception {
-		XlsReader reader = new XlsReader(f, "DraftOne.xml");
-		NodeList list = reader.getRecordRows();
+		XlsReader reader = new XlsReader();
+		NodeList list = reader.getRecordRows(f);
 		for(int i=0;i<list.getLength();i++){
 			Node n = list.item(i);
 			System.out.println(n.getTextContent());
@@ -71,10 +71,10 @@ public class TestXlsReader {
 	
 	@Test
 	public void testGetSimpleXmlFromXls() {
-		XlsReader reader = new XlsReader(f, "DraftOne.xml");
+		XlsReader reader = new XlsReader();
 		Document doc=null;
 		try {
-			doc = reader.getSimpleXmlFromXls();	
+			doc = reader.getSimpleXmlFromXls(f);	
 		
 			NodeList list = (NodeList) doc.getChildNodes();
 			for(int i=0;i<list.getLength();i++){
@@ -91,7 +91,7 @@ public class TestXlsReader {
 	
 	@Test
 	public void testQueryAbstractElementDoc() {
-		XlsReader reader = new XlsReader(f);
+		XlsReader reader = new XlsReader();
 		String result="";
 		try {
 			result = reader.queryAbstractElementDoc("data","vendor=michelin","price" );
@@ -106,7 +106,7 @@ public class TestXlsReader {
 
 	@Test
 	public void testQueryAbstractElementDocComplex() {
-		XlsReader reader = new XlsReader(f);
+		XlsReader reader = new XlsReader();
 		String result="";
 		try {
 			result = reader.queryAbstractElementDoc("DraftOne","vendor=michelin","price" );

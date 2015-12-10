@@ -3,6 +3,7 @@ package org.spo.svc.xlaccess.service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
@@ -18,6 +19,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -31,7 +33,6 @@ import org.apache.poi.util.PackageHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spo.ifs.template.web.HomeController;
 import org.spo.svc.config.AppConstants;
 import org.spo.svc.xlaccess.model.QueryResult;
 import org.spo.svc.xlaccess.model.QueryResultImpl;
@@ -42,117 +43,75 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 import com.sun.org.apache.xerces.internal.dom.DeferredTextImpl;
 
-
+/**
+ * 
+ * @author Prem
+ * Agnostic to worksheet, Each xls can have only one workseet. 
+ * can work with multiple files, cacheing it to a map.
+ * works only with xls 2003 format (no xlsx)
+ * 
+ * 
+ *
+ */
 @Service
 public class XlsReader {
 
 
-	private File file;
-	private String resourceXml="DraftOne.xml";
-	private String sheetName;
-	private String cacheId;
+	//private File file;
+	//private String resourceXml="Q2-2014_Data_Elements_forQA.xml";
+	//private String sheetName;
+	//private String cacheId;
 	private Document docNew;
+	private Map<String,Document> docMap = new LinkedHashMap<String,Document>();
 
 	
 	private static final Logger log = LoggerFactory
-			.getLogger(HomeController.class);
+			.getLogger(XlsReader.class);
 
 
 	public void  getXlsAsString() throws Exception{}
 
-	public void changeXmlDataSource(String resourceXml){
-		URL resourceUrl = getClass().getResource("/"+resourceXml+".xml");
-		String resourcePath;
+	public void addDataSource(File file){
+		
 		try {
-			resourcePath = resourceUrl.toURI().getPath();
-			 file= new File(resourcePath);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
+			docNew = getSimpleXmlFromXls(file);
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}	
+		docMap.put(file.getName().replaceAll(".xml",""),docNew);
+		
 	}
 
 	public XlsReader(){
-		URL resourceUrl = getClass().getResource("/"+resourceXml);
+		URL resourceUrl = getClass().getResource("/xlsData");
 		String resourcePath;
 		try {
 			resourcePath = resourceUrl.toURI().getPath();
-			 file= new File(resourcePath);
+			File folder= new File(resourcePath);
+			File[] listOfFiles = folder.listFiles(); 
+			for(File file:listOfFiles){
+				addDataSource(file);
+			}
+			
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		
 	} 
 
-	public void setTestMode(){
-		URL resourceUrl = getClass().getResource("/Script7Test.xml");
-		String resourcePath;
-		try {
-			resourcePath = resourceUrl.toURI().getPath();
-			 file= new File(resourcePath);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	
-	public XlsReader(File f){
-		this.file = f;	
-		cacheId = f.getName();
-		docNew = XlsCache.getXmlCache().get(cacheId);
-	}
 
-	//Constructor for unit testing
-	public XlsReader(File f, String sheetName){
-		this.file = f;
-		this.sheetName= sheetName;
-	}
-
-	//TODO: Implementation suspended
-	public void readXlsAsXml() throws Exception{
-		FileInputStream in = new FileInputStream(file);
-		//	FileOutputStream out = new FileOutputStream(new File("temp.xml"));
-		ByteArrayOutputStream out = new ByteArrayOutputStream ();
-
-		OPCPackage pack = PackageHelper.open(in);
-		XSSFReader reader = new XSSFReader(pack);
-		StringWriter writer = new StringWriter();
-
-		POIXMLDocument doc = new POIXMLDocument(pack) {
-
-			@Override
-			public List<PackagePart> getAllEmbedds() throws OpenXML4JException {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		};
-		//IOUtils.copy(reader.getSheet("rId1"), writer, "UTF-8");
-		doc.write(out);
-		String x = new String(out.toByteArray(), "UTF-8");
-		//	while(reader.getSheetsData().hasNext()){
-		//	IOUtils.copy(reader.getWorkbookData(), writer, "UTF-8");	
-		String theString = writer.toString();
-		//System.out.println(x);
-		//	}
-
-
-
-	}
-
-
-	public Document getSimpleXmlFromXls( )  throws Exception{
+	public Document getSimpleXmlFromXls(File file )  throws Exception{
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		docNew = docBuilder.newDocument();
 		Element rootElement = docNew.createElement("Worksheet");
 
-		NodeList listHeaders = getHeaderRows();
-		NodeList listRecords = getRecordRows();
+		NodeList listHeaders = getHeaderRows(file);
+		NodeList listRecords = getRecordRows(file);
 
 
 		Element row = null;
@@ -164,7 +123,7 @@ public class XlsReader {
 			int trueIdx =-1;
 			row = docNew.createElement("Row");
 			Node rows = listRecords.item(rowIdx);
-			log.debug("working with row "+listRecords.item(rowIdx).getTextContent());
+			log.trace("working with row "+listRecords.item(rowIdx).getTextContent());
 
 
 			NodeList cellNodeList = rows.getChildNodes();//Cell
@@ -228,7 +187,7 @@ public class XlsReader {
 		return docNew;
 	}
 
-	public NodeList getHeaderRows() throws Exception{
+	public NodeList getHeaderRows(File file) throws Exception{
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		//docFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -237,8 +196,10 @@ public class XlsReader {
 		NodeList sheetLst = doc.getElementsByTagName("ss:Name");
 
 
-		XPath xpath = XPathFactory.newInstance().newXPath();
-		XPathExpression expr = xpath.compile("//Worksheet[@Name=\"" +sheetName+"\"]/Table/Row[1]/Cell");
+		XPath xpath = XPathFactory.newInstance().newXPath();	
+		//TODO XPathExpression expr = xpath.compile("//Worksheet[@Name=\"" +sheetName+"\"]/Table/Row[1]/Cell");
+		//for now allowing only one worksheet
+		XPathExpression expr = xpath.compile("//Worksheet/Table/Row[1]/Cell");
 		Object result = expr.evaluate(doc, XPathConstants.NODESET);
 		NodeList headerNodes = (NodeList) result;
 
@@ -256,7 +217,7 @@ public class XlsReader {
 
 
 
-	public NodeList getRecordRows() throws Exception{
+	public NodeList getRecordRows(File file) throws Exception{
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		//docFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -264,7 +225,7 @@ public class XlsReader {
 
 
 		XPath xpath = XPathFactory.newInstance().newXPath();
-		XPathExpression expr = xpath.compile("//Worksheet[@Name=\"" +sheetName+"\"]/Table/Row");
+		XPathExpression expr = xpath.compile("//Worksheet/Table/Row");
 		Object result = expr.evaluate(doc, XPathConstants.NODESET);
 		NodeList tableRowNodes = (NodeList) result;
 
@@ -295,6 +256,8 @@ public class XlsReader {
 			FileWriter writer2 = new FileWriter("test.xml");
 			writer2.write(buf.toString());
 			writer2.close();
+			FileOutputStream filestream=new FileOutputStream(new File("C:/temp/test.xml"));
+			
 
 			buf = new StringBuffer();
 			// Use a Transformer for output
@@ -303,8 +266,8 @@ public class XlsReader {
 					tFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			DOMSource source = new DOMSource(doc);
-			//StreamResult result = new StreamResult(System.out);
-			//transformer.transform(source, result);	
+			StreamResult result = new StreamResult(filestream);
+			transformer.transform(source, result);	
 
 
 		}
@@ -313,51 +276,58 @@ public class XlsReader {
 	}
 
 
+	
+	
 	//String queryExpression example : dct_column_name=abstraction_dt : useappend &  
-	public NodeList queryAbstractElementDocElem(String sheetName, String queryExpression, String requiredField  ) throws Exception{
-		if(!queryExpression.contains(AppConstants.QUERY_EQUALS_EXP)){
-			throw new IllegalArgumentException("expression should contain =", null);
-		}
+	public NodeList core_QueryAbstractElementDocElem(String fileName, String queryExpression, String requiredField  ) throws Exception{
 		ArrayList<String> keyValSequence =new ArrayList<String>();
-		if(queryExpression.contains(AppConstants.QUERY_CONCAT_EXP)){
-			String[] expressionArray_joined  = queryExpression.split(AppConstants.QUERY_CONCAT_EXP);
-			for(String equalsExpression: expressionArray_joined){
-				String[] expressionArray_equals  = equalsExpression.split(AppConstants.QUERY_EQUALS_EXP);
+		if(queryExpression!=null ){
+
+			if(!queryExpression.contains(AppConstants.QUERY_EQUALS_EXP)){
+				throw new IllegalArgumentException("expression should contain =", null);
+			}
+
+			if(queryExpression.contains(AppConstants.QUERY_CONCAT_EXP)){
+				String[] expressionArray_joined  = queryExpression.split(AppConstants.QUERY_CONCAT_EXP);
+				for(String equalsExpression: expressionArray_joined){
+					String[] expressionArray_equals  = equalsExpression.split(AppConstants.QUERY_EQUALS_EXP);
+					keyValSequence.add(expressionArray_equals[0]);
+					keyValSequence.add(expressionArray_equals[1]);
+				}
+			}else{
+				String[] expressionArray_equals  = queryExpression.split(AppConstants.QUERY_EQUALS_EXP);
 				keyValSequence.add(expressionArray_equals[0]);
 				keyValSequence.add(expressionArray_equals[1]);
 			}
-		}else{
-			String[] expressionArray_equals  = queryExpression.split(AppConstants.QUERY_EQUALS_EXP);
-			keyValSequence.add(expressionArray_equals[0]);
-			keyValSequence.add(expressionArray_equals[1]);
 		}
 		String[] expressionArray1 = {};
 		String[] e = keyValSequence.toArray(expressionArray1);
-		this.sheetName = sheetName;
 		String toRet = "";
-		if(docNew==null){
-			docNew = getSimpleXmlFromXls();	
-			XlsCache.getXmlCache().put(cacheId, docNew);
-			docNew = XlsCache.getXmlCache().get(cacheId);
-		}else{
+		//if(docNew==null){
+		
+		//}else{
 			log.debug("Working with docNew from cache");
-		}
+		//}
 
 		XPath xpath = XPathFactory.newInstance().newXPath();
 
 		//		String query = "//Row/Record[(@key=\"" +expressionArray[0]+"\" and @value=\"" +expressionArray[1]+"\" )" +
 		//				" and  (@key=\"" +expressionArray[2]+"\" and @value=\"" +expressionArray[3]+"\")"+ 
 		//				"]/../Record[@key=\"" +requiredField+"\"]";
+		//TODO to implement
+		//query = "//Worksheet[@Name=\"" +sheetName+"\"]/Row["+e[0]+"='"+e[1]+"' and "+e[2]+"='"+e[3]+"']";	
 		String query = "";
 		if(e.length>2){
 			query = "//Row["+e[0]+"='"+e[1]+"' and "+e[2]+"='"+e[3]+"']";	
+		}else if(e.length==2){
+			query ="//Row["+e[0]+"='"+e[1]+"']";	
 		}else{
-			query = "//Row["+e[0]+"='"+e[1]+"']";	
+			query="//Row";
 		}
 
 		log.debug("Query is "+ query);
 
-
+		Document docNew = docMap.get(fileName);
 
 		XPathExpression expr = xpath.compile(query);
 		Object result = expr.evaluate(docNew, XPathConstants.NODESET);
@@ -372,7 +342,7 @@ public class XlsReader {
 	}
 	public String queryAbstractElementDoc(String sheetName, String queryExpression, String requiredField  ) throws Exception{
 		String toRet="";
-		NodeList tableRowNodes= queryAbstractElementDocElem(sheetName, queryExpression, requiredField);
+		NodeList tableRowNodes= core_QueryAbstractElementDocElem(sheetName, queryExpression, requiredField);
 		log.debug("Result count is " +tableRowNodes.getLength());
 		Node recordNode = tableRowNodes.item(0);
 		for(int resultSetIdx = 0; resultSetIdx<tableRowNodes.getLength();resultSetIdx++){
@@ -395,7 +365,7 @@ public class XlsReader {
 
 	public Document queryAbstractElementDocDocument(String sheetName, String queryExpression, String requiredField  ) throws Exception{
 
-		NodeList tableRowNodes = queryAbstractElementDocElem(sheetName, queryExpression, requiredField);
+		NodeList tableRowNodes = core_QueryAbstractElementDocElem(sheetName, queryExpression, requiredField);
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		Document doc = docBuilder.newDocument();
@@ -417,7 +387,7 @@ public class XlsReader {
 		public List<Map<String, String>>  queryAbstractElementDoc_List(String sheetName, String queryExpression, String requiredField  ) throws Exception{
 			List<Map<String, String>> lstResultMap = new ArrayList<Map<String, String>>();
 			Map<String, String> entryMap = new LinkedHashMap<String, String>();
-			NodeList tableRowNodes= queryAbstractElementDocElem(sheetName, queryExpression, requiredField);
+			NodeList tableRowNodes= core_QueryAbstractElementDocElem(sheetName, queryExpression, requiredField);
 			log.debug("Result count is " +tableRowNodes.getLength());
 			Node recordNode = tableRowNodes.item(0);
 			for(int resultSetIdx = 0; resultSetIdx<tableRowNodes.getLength();resultSetIdx++){
@@ -434,29 +404,65 @@ public class XlsReader {
 			return lstResultMap;
 		}
 
+		public List<Map<String, String>>  queryAbstractElementDoc_List(String sheetName  ) throws Exception{
+			List<Map<String, String>> lstResultMap = new ArrayList<Map<String, String>>();
+			Map<String, String> entryMap = new LinkedHashMap<String, String>();
+			NodeList tableRowNodes= core_QueryAbstractElementDocElem(sheetName,null,null);
+			log.debug("Result count is " +tableRowNodes.getLength());
+			Node recordNode = tableRowNodes.item(0);
+			for(int resultSetIdx = 0; resultSetIdx<tableRowNodes.getLength();resultSetIdx++){
+				Element record = (Element)tableRowNodes.item(resultSetIdx);			
+				NodeList recordFldNodes = record.getChildNodes();
+				entryMap = new LinkedHashMap<String, String>();
+				for(int fldIdx = 0; fldIdx<recordFldNodes.getLength();fldIdx++){
+					Element recordField = (Element)recordFldNodes.item(fldIdx);
+					entryMap.put(recordField.getTagName(), recordField.getTextContent());
+				}
+				lstResultMap.add(entryMap);
+			}
+			
+			return lstResultMap;
+		}
+		
 		public QueryResult queryAbstractElementDoc_QueryResult(String sheetName, String queryExpression, String requiredField  ) throws Exception{
 			List<Map<String, String>> lstResultMap = queryAbstractElementDoc_List(sheetName, queryExpression, requiredField);
 			QueryResult result = new QueryResultImpl();
 			result.setResult(lstResultMap);
 			return result;
 		}
-	public File getFile() {
-		return file;
-	}
+	
+
+	
+	/*********************************************/
+	//TODO: Implementation suspended
+	public void readXlsAsXml(File file) throws Exception{
+		FileInputStream in = new FileInputStream(file);
+		//	FileOutputStream out = new FileOutputStream(new File("temp.xml"));
+		ByteArrayOutputStream out = new ByteArrayOutputStream ();
+
+		OPCPackage pack = PackageHelper.open(in);
+		XSSFReader reader = new XSSFReader(pack);
+		StringWriter writer = new StringWriter();
+
+		POIXMLDocument doc = new POIXMLDocument(pack) {
+
+			@Override
+			public List<PackagePart> getAllEmbedds() throws OpenXML4JException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		//IOUtils.copy(reader.getSheet("rId1"), writer, "UTF-8");
+		doc.write(out);
+		String x = new String(out.toByteArray(), "UTF-8");
+		//	while(reader.getSheetsData().hasNext()){
+		//	IOUtils.copy(reader.getWorkbookData(), writer, "UTF-8");	
+		String theString = writer.toString();
+		//System.out.println(x);
+		//	}
 
 
-	public void setFile(File file) {
-		this.file = file;
-	}
 
-
-	public String getSheetName() {
-		return sheetName;
-	}
-
-
-	public void setSheetName(String sheetName) {
-		this.sheetName = sheetName;
 	}
 
 	

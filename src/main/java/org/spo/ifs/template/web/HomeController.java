@@ -33,17 +33,31 @@ public class HomeController {
         logger.info("Welcome home! the client locale is " + locale.toString());
 
         Date date = new Date();
-        DateFormat dateFormat =
-                DateFormat.getDateTimeInstance(DateFormat.LONG,
-                        DateFormat.LONG, locale);
+        DateFormat dateFormat =DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG, locale);
 
         String formattedDate = dateFormat.format(date);
-
         model.addAttribute("serverTime", formattedDate);
         model.addAttribute("echoService", echoService);
         model.addAttribute("someItems", new String[] { "one", "two", "three" });
-
         return "index";
     }
 
+    @RequestMapping(value = "/about", method = RequestMethod.GET)
+    public String about(Locale locale, Model model) {
+        logger.info("Welcome home! the client locale is " + locale.toString());
+
+        return "about";
+    }
+    @RequestMapping(value = "/contact", method = RequestMethod.GET)
+    public String contact(Locale locale, Model model) {
+        logger.info("Welcome home! the client locale is " + locale.toString());
+
+        return "contact";
+    }
+    @RequestMapping(value = "/post", method = RequestMethod.GET)
+    public String post(Locale locale, Model model) {
+        logger.info("Welcome home! the client locale is " + locale.toString());
+
+        return "post";
+    }
 }

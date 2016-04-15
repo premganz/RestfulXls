@@ -16,6 +16,10 @@ Of course welding these together requires external dependencies. Here I would ne
 
 And  you will need to install Python in your machine. 2.7 preferred.
 
+Use test url
+http://localhost:8082/readxl/Tyres
+
+
 Licence:
 
 * The MIT License (MIT)
